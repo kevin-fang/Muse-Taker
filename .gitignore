@@ -1,3 +1,4 @@
 node_modules/
 temp/
 output.pdf
+*.svg

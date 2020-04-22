@@ -1,8 +1,9 @@
 const puppeteer = require('puppeteer')
 const fs = require('fs')
 const axios = require('axios')
-//const link = "https://musescore.com/user/29410427/scores/5726739"
-const link = "https://musescore.com/derykafrank/light-of-the-seven-got"
+const link = "https://musescore.com/user/29410427/scores/5726739"
+//const link = "https://musescore.com/derykafrank/light-of-the-seven-got"
+const convert_and_merge = require('./convert_and_merge.js')
 
 const download_image = (url, image_path) =>
   axios({
@@ -42,22 +43,42 @@ const scrapeMusescore = async () => {
 	const scrollableSelector = "._28Ry7._2I8aD._1UgAz"
 	await page.waitForSelector(scrollableSelector)
 
+	let scrollHeight = 0
 	await page.evaluate(selector => {
 		const scrollable = document.querySelector(selector)
 		let scrolled = 0
-		while (scrolled < scrollable.scrollHeight) {
-			setTimeout(() => {
+		scrollHeight = scrollable.scrollHeight
+		let scroller = setInterval(() => {
+			if (scrolled < scrollHeight) {
 				scrollable.scrollBy(0, 500)
-			}, scrolled * 2)
-			scrolled += 100
-		}
+				scrolled += 500
+				console.log("scrolling: ", scrolled + "/" + scrollHeight)
+			} else {
+				console.log("finished scrolling")
+				clearInterval(scroller)
+				throw new Error("done_scrolling_workaround")
+			}
+		}, 500)
+		console.log("out of scroller")
 	}, scrollableSelector)
-
+	page.on("pageerror", (err) => {
+		let msg = err.toString()
+		if (msg.includes("done_scrolling_workaround")) {
+			console.log("done!")
+			convert_and_merge("./temp")
+			browser.close()
+		}
+	})
+	//browser.close()
 }
 
-try {
-	scrapeMusescore()
-} catch (e) {
-	console.error(e)
-	process.exit()
+let run = async () => {
+	try {
+		await scrapeMusescore()
+	} catch (e) {
+		console.error(e)
+		process.exit()
+	}
 }
+
+run()
