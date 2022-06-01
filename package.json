@@ -16,7 +16,7 @@
     "pdfkit": "^0.11.0",
     "pdfmerge": "^1.0.2",
     "puppeteer": "^2.1.1",
-    "sharp": "^0.25.2",
+    "sharp": "^0.30.5",
     "svg-to-pdfkit": "^0.1.8"
   }
 }
